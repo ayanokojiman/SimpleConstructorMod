@@ -1,0 +1,26 @@
+Items: {
+	ArenaConstructor: {
+		DisplayName: Arena Constructor
+		Tooltip: ""
+	}
+
+	HellishElevator: {
+		DisplayName: Hellish Elevator
+		Tooltip: ""
+	}
+
+	HellishPlatform: {
+		DisplayName: Hellish Platform
+		Tooltip: ""
+	}
+
+	LuxuriousUnderworldElevator: {
+		DisplayName: Luxurious Underworld Elevator
+		Tooltip: ""
+	}
+
+	UnderworldElevator: {
+		DisplayName: Underworld Elevator
+		Tooltip: ""
+	}
+}
