@@ -5,7 +5,6 @@ using System;
 using Microsoft.Xna.Framework;
 using SimpleConstructor.Utils;
 
-
 namespace SimpleConstructor.Content.Items.Bases
 {
     public abstract class ElevatorBase : ModItem
@@ -24,6 +23,7 @@ namespace SimpleConstructor.Content.Items.Bases
         protected virtual int FloorID => 19;
         protected virtual int FloorStyleID => 0;
         protected virtual bool PlaceRope => true;
+        private bool IsTunnelWidthEven = false;
         public override void SetDefaults()
         {
             Item.useTime = 10;
@@ -31,13 +31,13 @@ namespace SimpleConstructor.Content.Items.Bases
             Item.useStyle = ItemUseStyleID.Swing;
             Item.UseSound = SoundID.Dig;
             Item.consumable = true;
+            IsTunnelWidthEven = (TunnelWidth % 2) == 0;
         }
-
         private static bool RemoveOneLayer(int startX, int endX, int layerY, int offset = 0)
         {
             bool tileDestroyedInRow = false;
 
-            for (int x = startX - offset; x <= endX + offset; x++)
+            for (int x = startX - offset; x < endX + offset; ++x)
             {
                 Tile tile = Main.tile[x, layerY];
 
@@ -62,7 +62,7 @@ namespace SimpleConstructor.Content.Items.Bases
         protected virtual void BuildTunnelWallLayer(int startX, int endX, int layerY)
         {
             if (TunnelWallID == null) return;
-            for (int x = startX; x <= endX; x++)
+            for (int x = startX; x < endX; x++)
             {
                 WorldGen.KillWall(x, layerY);
                 WorldGen.PlaceWall(x, layerY, (int)TunnelWallID);
@@ -70,20 +70,24 @@ namespace SimpleConstructor.Content.Items.Bases
         }
         protected virtual void BuildTunnelLayer(int startX, int endX, int midX, int layerY, bool placeLightSource)
         {
+
             for (int x = startX - TunnelWallWidth; x < startX; ++x)
             {
                 TileUtils.PlaceTile(x, layerY, TunnelBlockID, true);
             }
-            for (int x = endX; x <= endX + TunnelWallWidth; ++x)
+            for (int x = endX; x < endX + TunnelWallWidth; ++x)
             {
                 TileUtils.PlaceTile(x, layerY, TunnelBlockID, true);
             }
+
+
             if (PlaceRope) TileUtils.PlaceTile(midX, layerY, TileID.Rope);
 
             if (placeLightSource)
             {
+                int offset = 1;
                 TileUtils.PlaceTile(startX, layerY, LightSourceID, false, LightSourceStyleID);
-                TileUtils.PlaceTile(endX - 1, layerY, LightSourceID, false, LightSourceStyleID);
+                TileUtils.PlaceTile(endX - offset, layerY, LightSourceID, false, LightSourceStyleID);
             }
 
             BuildTunnelWallLayer(startX, endX, layerY + 1);
@@ -92,9 +96,9 @@ namespace SimpleConstructor.Content.Items.Bases
         protected virtual void BuildTunnelFloor(int startX, int endX, int startY)
         {
             RemoveOneLayer(startX, endX, startY);
-            for (int x = startX; x <= endX; x++)
+            for (int x = startX; x < endX; x++)
             {
-                TileUtils.PlaceTile(x, startY, FloorID, false, FloorStyleID);
+                TileUtils.PlaceTile(x, startY, FloorID, true, FloorStyleID);
             }
 
         }
@@ -106,14 +110,13 @@ namespace SimpleConstructor.Content.Items.Bases
         public override bool? UseItem(Player player)
         {
 
-            // (int)((player.position.X + player.width / 2f) / 16f)
-            int centerX = (int)Math.Round(player.position.X);
-            int centerY = (int)Math.Round(player.position.Y + player.height - 1);
+            int centerX = (int)((player.position.X + player.width / 2f) / 16f);
+            int centerY = (int)((player.position.Y + player.height) / 16f) - 1;
             int startY = centerY + 1;
 
             // Check if player is on the ground
             Tile tile = Main.tile[centerX, startY];
-            if (tile == null || !tile.HasTile)
+            if (tile == null || !tile.HasTile || tile.TileType == TileID.Trees)
             {
                 Main.NewText("You need to stand on the ground in order to use this item!", Color.Yellow);
                 return false;
@@ -122,6 +125,13 @@ namespace SimpleConstructor.Content.Items.Bases
             int midOffset = (int)Math.Floor(TunnelWidth / 2.0);
             int startX = centerX - midOffset;
             int endX = centerX + midOffset;
+
+            if (!IsTunnelWidthEven)
+            {
+                endX += 1;
+            }
+
+            GameUtils.PrintDebugMessage($"startX: {startX} endX: {endX} midOffset: {midOffset} centerX: {centerX}");
 
             int layerY = startY;
             int lightSourceLayerY = startY + LightSourceSpacing;
