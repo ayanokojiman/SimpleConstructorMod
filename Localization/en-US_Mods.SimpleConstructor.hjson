@@ -23,4 +23,9 @@ Items: {
 		DisplayName: Underworld Elevator
 		Tooltip: ""
 	}
+
+	WorldPlatform: {
+		DisplayName: World Platform
+		Tooltip: ""
+	}
 }
