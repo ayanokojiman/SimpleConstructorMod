@@ -6,7 +6,7 @@ namespace SimpleConstructor.Utils
     public static class TileUtils
     {
 
-        // A tile is considered to be protected from destruction if it cannot be destroyed by a bomb or is not a block
+        // Some common tiles which can't be easily mined in pre-hardmode/hardmode
         public static bool IsTileProtected(this Tile tile)
         {
             if (tile == null) return true;
@@ -30,8 +30,8 @@ namespace SimpleConstructor.Utils
                 case TileID.Chlorophyte:
                 // --- Check 2: Inventory/Structure Tiles (Always Protected by default on TileType) Chests, etc. 
                 case TileID.Containers:
-                case TileID.Dressers:
-                case TileID.TrashCan:
+                // case TileID.Dressers:
+                // case TileID.TrashCan:
                 case TileID.Mannequin:
                 case TileID.Womannequin:
                 case TileID.HatRack:
