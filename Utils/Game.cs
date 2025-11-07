@@ -7,8 +7,10 @@ namespace SimpleConstructor.Utils
     {
         public static void PrintDebugMessage(string message)
         {
-            Main.NewText(message, Color.Purple);
-
+            if (Constants.ENV == "DEV")
+            {
+                Main.NewText(message, Color.Purple);
+            }
         }
     }
 }
