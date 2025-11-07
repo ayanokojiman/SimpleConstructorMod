@@ -12,7 +12,6 @@ namespace SimpleConstructor.Content.Items
                 .AddIngredient(ItemID.DirtBlock, 1)
                 .Register();
         }
-
     }
 
 }

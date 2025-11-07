@@ -1,7 +1,5 @@
 using Terraria.ID;
 using SimpleConstructor.Content.Items.Bases;
-using Terraria;
-
 
 namespace SimpleConstructor.Content.Items
 {
