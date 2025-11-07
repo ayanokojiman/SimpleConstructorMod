@@ -106,16 +106,14 @@ namespace SimpleConstructor.Content.Items.Bases
         {
 
         }
-
         public override bool? UseItem(Player player)
         {
 
             int centerX = (int)((player.position.X + player.width / 2f) / 16f);
-            int centerY = (int)((player.position.Y + player.height) / 16f) - 1;
-            int startY = centerY + 1;
+            int centerY = (int)((player.position.Y + player.height) / 16f);
 
             // Check if player is on the ground
-            Tile tile = Main.tile[centerX, startY];
+            Tile tile = Framing.GetTileSafely(centerX, centerY);
             if (tile == null || !tile.HasTile || tile.TileType == TileID.Trees)
             {
                 Main.NewText("You need to stand on the ground in order to use this item!", Color.Yellow);
@@ -133,8 +131,8 @@ namespace SimpleConstructor.Content.Items.Bases
 
             GameUtils.PrintDebugMessage($"startX: {startX} endX: {endX} midOffset: {midOffset} centerX: {centerX}");
 
-            int layerY = startY;
-            int lightSourceLayerY = startY + LightSourceSpacing;
+            int layerY = centerY;
+            int lightSourceLayerY = centerY + LightSourceSpacing;
 
             int tilesDestroyedCount = 0;
             int failCount = 0;
@@ -165,8 +163,8 @@ namespace SimpleConstructor.Content.Items.Bases
 
             if (failCount < MaxFailsToStop)
             {
-                BuildTunnelFloor(startX, endX, startY);
-                BuildTunnelTop(startX, endX, centerY);
+                BuildTunnelFloor(startX, endX, centerY);
+                BuildTunnelTop(startX, endX, centerY - 1);
             }
 
             if (tilesDestroyedCount > 0 && failCount < MaxFailsToStop)
