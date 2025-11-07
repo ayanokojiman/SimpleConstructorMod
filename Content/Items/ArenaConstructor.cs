@@ -5,13 +5,11 @@ namespace SimpleConstructor.Content.Items
 {
     public class ArenaConstructor : ArenaConstructorBase
     {
-
         public override void AddRecipes()
         {
             CreateRecipe()
-                .AddIngredient(ItemID.WoodPlatform, 100)
+                .AddIngredient(ItemID.DirtBlock, 1)
                 .Register();
         }
-
     }
 }

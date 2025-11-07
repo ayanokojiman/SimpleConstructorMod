@@ -1,8 +1,6 @@
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
-using System;
-using Microsoft.Xna.Framework;
 using SimpleConstructor.Utils;
 
 
@@ -15,7 +13,17 @@ namespace SimpleConstructor.Content.Items.Bases
         protected virtual int PlatformTileStyleID => 0;
         protected virtual int PlatformWidth => 50;
         protected virtual int MaxStack => 99;
-        protected virtual int? StartXOverride => null;
+        protected virtual int LiquidTilesToClear => 10;
+        protected virtual int? TopTilesToClear => null;
+        protected virtual int? StartXOverride
+        {
+            get { return null; }
+        }
+        protected virtual int? StartYOverride
+        {
+            get { return null; }
+        }
+
         public override void SetDefaults()
         {
             Item.width = 30;
@@ -27,17 +35,64 @@ namespace SimpleConstructor.Content.Items.Bases
             Item.maxStack = MaxStack;
             Item.consumable = true;
         }
-
-        public override void AddRecipes()
+        protected virtual bool CanUse(Player player)
         {
-            CreateRecipe()
-                .AddIngredient(ItemID.WoodPlatform, 100)
-                .AddTile(TileID.WorkBenches)
-                .Register();
+            return true;
         }
-        public override bool AltFunctionUse(Player player) => true;
+        // Overrides the default no-tile check  
+        protected virtual bool CanPlace(Tile tile)
+        {
+            return false;
+        }
+        protected virtual void ClearTopTiles(int x, int y)
+        {
+            if (TopTilesToClear == null) return;
+
+            for (int i = (int)(y - TopTilesToClear); i <= y; ++i)
+            {
+                Tile tile = Framing.GetTileSafely(x, i);
+                if (tile == null) continue;
+
+                if (CanPlace(tile))
+                    WorldGen.KillTile(x, i, fail: false, effectOnly: false, noItem: true);
+            }
+        }
+        private void ClearLiquids(int startX, int startY)
+        {
+            for (int y = startY - (TopTilesToClear ?? 0); y < startY + LiquidTilesToClear; y++)
+            {
+                Tile tile = Framing.GetTileSafely(startX, y);
+                if (tile != null && tile.HasTile)
+                {
+                    tile.LiquidAmount = 0;
+                    tile.SkipLiquid = true;
+                    WorldGen.SquareTileFrame(startX, y);
+                }
+            }
+
+        }
+        protected virtual void BuildPlatform(int startX, int startY)
+        {
+            for (int x = 0; x < PlatformWidth; x++)
+            {
+                int currentX = startX + x;
+                if (!WorldGen.InWorld(currentX, startY)) continue;
+
+                Tile tile = Framing.GetTileSafely(currentX, startY);
+                if (!tile.HasTile || CanPlace(tile))
+                {
+                    ClearLiquids(currentX, startY - 1);
+                    ClearTopTiles(currentX, startY);
+                    WorldGen.PlaceTile(currentX, startY, PlatformTileID, forced: true, style: PlatformTileStyleID);
+                }
+            }
+        }
         public override bool? UseItem(Player player)
         {
+            if (!CanUse(player))
+            {
+                return false;
+            }
             // Only proceed on left-click (primary use)
             if (player.altFunctionUse == 2)
             {
@@ -55,15 +110,7 @@ namespace SimpleConstructor.Content.Items.Bases
 
             int startX = StartXOverride ?? (dir == "left" ? mouseX - PlatformWidth + 1 : mouseX);
 
-            for (int x = 0; x < PlatformWidth; x++)
-            {
-                int currentX = startX + x;
-
-                if (WorldGen.InWorld(currentX, mouseY) && !Framing.GetTileSafely(currentX, mouseY).HasTile)
-                {
-                    WorldGen.PlaceTile(currentX, mouseY, PlatformTileID, forced: true, style: PlatformTileStyleID);
-                }
-            }
+            BuildPlatform(startX, StartYOverride ?? mouseY);
 
             return true;
         }
