@@ -4,7 +4,7 @@ using Terraria;
 
 namespace SimpleConstructor.Content.Items
 {
-    public class WorldPlatform : ArenaConstructorBase
+    public class HellishPlatform : ArenaConstructorBase
     {
         protected override int PlatformWidth => Main.maxTilesX;
         protected override int? StartXOverride => 0;
